@@ -1,0 +1,45 @@
+name: Code graphics or SDK/CLI feature, question, or concern
+description: Suggest an improvement or discuss code-based graphics, the SDK, CLI, or related documentation.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for code-based graphics, SDK, CLI, package downloads, or related documentation topics.
+        For account, login, billing, or general application and website problems, use the [LIGR Help Center](https://help.ligr.live/en/).
+        Issues are public. Do not include API keys, login credentials, or customer data.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Issue scope
+      options:
+        - label: This issue concerns code-based graphics, the graphics SDK, CLI, or related documentation.
+          required: true
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - Feature request
+        - Question
+        - Concern
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: What are you trying to do?
+      description: Explain the code graphics, SDK, or CLI workflow and the problem or question.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Requested outcome
+      description: Describe the improvement or answer you need. Include alternatives you have tried when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Additional details
+      description: Include relevant package versions, documentation links, or small code examples. Remove credentials and customer data.

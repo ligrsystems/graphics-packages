@@ -1,0 +1,53 @@
+name: Code graphics or SDK/CLI bug
+description: Report a problem with code-based graphics, the graphics SDK, CLI, or related documentation.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for code-based graphics, SDK, CLI, package downloads, or related documentation bugs.
+        For account, login, billing, or general application and website problems, use the [LIGR Help Center](https://help.ligr.live/en/).
+        Issues are public. Do not include API keys, login credentials, or customer data.
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Issue scope
+      options:
+        - label: This issue concerns code-based graphics, the graphics SDK, CLI, or related documentation.
+          required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Code-based graphics
+        - Graphics SDK
+        - CLI
+        - Package downloads or installation
+        - Related documentation
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions and environment
+      description: Include SDK or CLI versions and relevant Node.js, package manager, operating system, or browser versions.
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include a minimal code example or public reproduction link when relevant. Remove credentials and customer data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: Include relevant error messages or screenshots. Remove credentials and customer data.
+    validations:
+      required: true
