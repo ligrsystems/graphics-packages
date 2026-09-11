@@ -23,7 +23,7 @@ Use [GitHub Issues](https://github.com/ligrsystems/graphics-packages/issues/new/
 - Creating and publishing code-based graphics.
 - The graphics SDK and its integration with your code.
 - The CLI, package downloads, and installation.
-- Documentation for these workflows.
+- Incorrect code graphics examples or instructions.
 
 Include package versions, reproduction steps, and a small code example when relevant.
 Issues are public. Do not include API keys, login credentials, or customer data.
