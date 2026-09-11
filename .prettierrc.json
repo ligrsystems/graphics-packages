@@ -1,0 +1,11 @@
+{
+  "overrides": [
+    {
+      "files": [
+        ".github/ISSUE_TEMPLATE/bug.yml",
+        ".github/ISSUE_TEMPLATE/feature-or-question.yml"
+      ],
+      "options": { "parser": "json" }
+    }
+  ]
+}
