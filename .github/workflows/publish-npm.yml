@@ -23,6 +23,9 @@ jobs:
     # Off until @ligr/cli has a trusted publisher on npm for this workflow. Then set the
     # repository variable NPM_PUBLISH to true. See "Publish to npm" in README.md.
     if: github.repository == 'ligrsystems/graphics-packages' && vars.NPM_PUBLISH == 'true'
+    # The npm trusted publisher names this environment. Only main and v* tags can deploy to it,
+    # so a changed copy of this workflow on another branch cannot publish.
+    environment: npm
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

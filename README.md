@@ -93,13 +93,17 @@ Before the workflow publishes, it:
 
 A prerelease version gets the `next` dist-tag. Other versions get `latest`.
 
+The job runs in the GitHub environment `npm`. The npm trusted publisher names that environment.
+Only `main` and `v*` tags can deploy to it, so a changed copy of the workflow on another branch cannot publish.
+
 The workflow is off until the repository variable `NPM_PUBLISH` is `true`. To turn it on:
 
 1. Publish the first version of `@ligr/cli` by hand. npm adds a trusted publisher only to a package that exists.
-2. On npmjs.com, open `@ligr/cli` > Settings > Trusted publishing. Select GitHub Actions.
-3. Set the organization to `ligrsystems`, the repository to `graphics-packages` and the workflow to `publish-npm.yml`. Leave the environment empty.
-4. Allow the `npm publish` action.
-5. Set the repository variable `NPM_PUBLISH` to `true`.
+2. In this repository, open Settings > Environments and create `npm`. Under Deployment branches and tags, select "Selected branches and tags". Add the branch `main` and the tag pattern `v*`.
+3. On npmjs.com, open `@ligr/cli` > Settings > Trusted publishing. Select GitHub Actions.
+4. Set the organization to `ligrsystems`, the repository to `graphics-packages`, the workflow to `publish-npm.yml` and the environment to `npm`.
+5. Allow the `npm publish` action.
+6. Set the repository variable `NPM_PUBLISH` to `true`.
 
 To publish an earlier release again, run the workflow by hand with its tag, for example `v0.6.0`.
 
