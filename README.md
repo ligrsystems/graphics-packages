@@ -5,10 +5,22 @@ Public downloads and issue tracking for LIGR code-based graphics, the graphics S
 Use the SDK with HTML, JavaScript, or your preferred framework.
 The CLI creates projects and uploads graphics through the LIGR REST API.
 
-Download versioned packages from [Releases](https://github.com/ligrsystems/graphics-packages/releases).
-Each release includes SDK and CLI archives plus a `SHA256SUMS` file.
+Install the CLI from npm. It gives you the `ligr` command:
 
-No GitHub or npm account is required to download these packages.
+```sh
+npm i -g @ligr/cli
+ligr graphic --help
+```
+
+To run it once without an install, use `npx @ligr/cli graphic <command>`.
+`ligr-graphic` is the old name. `npx ligr-graphic <command>` still runs `ligr graphic <command>` and prints a deprecation notice.
+Replace `ligr-graphic <command>` with `ligr graphic <command>`.
+
+Download versioned SDK and CLI archives from [Releases](https://github.com/ligrsystems/graphics-packages/releases).
+Each release includes the SDK and CLI archives plus a `SHA256SUMS` file.
+From 0.6.0, the CLI archive is `ligr-cli-<version>.tgz`.
+
+No GitHub or npm account is required to install these packages.
 LIGR API operations require a LIGR API key.
 
 See the [graphics documentation](https://docs.ligr.live/graphics-sdk/).
@@ -62,6 +74,34 @@ Run the bot tests with Node.js 22:
 node --check scripts/issue-triage.mjs
 node --test scripts/__tests__/*.test.mjs
 ```
+
+## Publish to npm
+
+The `Publish @ligr/cli to npm` workflow publishes the CLI archive of each published release to npm.
+It runs in this public repository, so npm can link each version to this repository (provenance).
+npm makes no provenance for a package published from a private repository.
+
+The workflow uses npm trusted publishing. GitHub gives the job an OIDC token, and npm trades it for a one-time publish token.
+No npm token is stored in this repository.
+
+Before the workflow publishes, it:
+
+- Downloads `ligr-cli-<version>.tgz` and `SHA256SUMS` from the release.
+- Checks the archive against its `SHA256SUMS` line.
+- Checks that the archive holds `@ligr/cli` at the release version.
+- Stops with success if npm already has that version.
+
+A prerelease version gets the `next` dist-tag. Other versions get `latest`.
+
+The workflow is off until the repository variable `NPM_PUBLISH` is `true`. To turn it on:
+
+1. Publish the first version of `@ligr/cli` by hand. npm adds a trusted publisher only to a package that exists.
+2. On npmjs.com, open `@ligr/cli` > Settings > Trusted publishing. Select GitHub Actions.
+3. Set the organization to `ligrsystems`, the repository to `graphics-packages` and the workflow to `publish-npm.yml`. Leave the environment empty.
+4. Allow the `npm publish` action.
+5. Set the repository variable `NPM_PUBLISH` to `true`.
+
+To publish an earlier release again, run the workflow by hand with its tag, for example `v0.6.0`.
 
 ## Verify a download
 

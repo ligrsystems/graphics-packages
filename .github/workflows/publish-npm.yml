@@ -1,0 +1,93 @@
+name: Publish @ligr/cli to npm
+
+# The private LIGR source repository creates each release here. This workflow publishes the
+# CLI archive of that release to npm. It runs in this public repository, because npm makes no
+# provenance for a package published from a private repository.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish, for example v0.6.0
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Off until @ligr/cli has a trusted publisher on npm for this workflow. Then set the
+    # repository variable NPM_PUBLISH to true. See "Publish to npm" in README.md.
+    if: github.repository == 'ligrsystems/graphics-packages' && vars.NPM_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # npm trusted publishing: the job trades a GitHub OIDC token for a one-time npm token. No npm secret exists.
+      id-token: write
+    steps:
+      # Trusted publishing needs npm 11.5.1 or later. Node 24.21.0 ships npm 11.19.0.
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24.21.0"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download and verify the CLI archive
+        id: archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Release tag \"$TAG\" is not v<major>.<minor>.<patch>[-<prerelease>]."
+            exit 1
+          fi
+          version="${TAG#v}"
+          archive="ligr-cli-${version}.tgz"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir release --pattern "$archive" --pattern SHA256SUMS
+          cd release
+          # Check the archive against the checksum line the release publisher wrote for it.
+          awk -v file="$archive" '$2 == file' SHA256SUMS > archive.sha256
+          if [[ "$(wc -l < archive.sha256)" -ne 1 ]]; then
+            echo "::error::SHA256SUMS has no single line for $archive."
+            exit 1
+          fi
+          sha256sum --check --strict archive.sha256
+          tar -xOzf "$archive" package/package.json > manifest.json
+          # shellcheck disable=SC2016 # The single-quoted script is JavaScript, with its own ${} expressions.
+          node -e '
+            const manifest = JSON.parse(require("node:fs").readFileSync("manifest.json", "utf8"))
+            const [version] = process.argv.slice(1)
+            if (manifest.name !== "@ligr/cli" || manifest.version !== version) {
+              console.error(`::error::The archive holds ${manifest.name}@${manifest.version}, not @ligr/cli@${version}.`)
+              process.exit(1)
+            }
+          ' "$version"
+          echo "path=$PWD/$archive" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Publish with provenance
+        env:
+          ARCHIVE: ${{ steps.archive.outputs.path }}
+          VERSION: ${{ steps.archive.outputs.version }}
+        run: |
+          set -euo pipefail
+          # A retry after a lost response finds the version already on npm. npm versions are immutable, so stop here.
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' "https://registry.npmjs.org/@ligr%2fcli/$VERSION")"
+          if [[ "$status" == 200 ]]; then
+            echo "@ligr/cli@$VERSION is already on npm."
+            exit 0
+          fi
+          if [[ "$status" != 404 ]]; then
+            echo "::error::The npm registry answered HTTP $status for @ligr/cli@$VERSION."
+            exit 1
+          fi
+          # npm refuses a prerelease without a dist-tag. Keep prereleases off "latest".
+          tag=latest
+          if [[ "$VERSION" == *-* ]]; then tag=next; fi
+          npm publish "$ARCHIVE" --access public --provenance --tag "$tag"
